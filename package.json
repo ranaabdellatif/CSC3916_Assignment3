@@ -21,6 +21,7 @@
   "homepage": "https://github.com/shawnmccarthy/CSC3916_HW3#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -28,7 +29,7 @@
     "express": "^4.21.2",
     "http": "0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.10.1",
+    "mongoose": "^8.12.1",
     "passport": "^0.7.0",
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.1"
