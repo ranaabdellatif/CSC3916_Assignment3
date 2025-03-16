@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const Movie = require('./Movies'); // Import the Movie model
 
-mongoose.connect('mongodb://localhost:27017/moviesdb', {
+/*mongoose.connect('mongodb+srv://ranran:mypassword@hw3cluster.5v5ph.mongodb.net/?retryWrites=true&w=majority&appName=HW3Cluster', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB', err));
-
+*/
 const movies = [
   {
     title: "Princess Mononoke",
