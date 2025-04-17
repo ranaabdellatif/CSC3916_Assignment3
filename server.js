@@ -55,6 +55,7 @@ router.post('/signup', async (req, res) => {
         });
 
         await user.save();
+        console.log('signup route hit');
         res.status(201).json({ success: true, msg: 'Successfully created new user.' });
     } catch (err) {
         if (err.code === 11000) {
@@ -64,6 +65,7 @@ router.post('/signup', async (req, res) => {
             return res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
         }
     }
+
 });
 
 // Signin Route
@@ -72,9 +74,9 @@ router.post('/signin', async (req, res) => {
     const user = await User.findOne({ username: req.body.username }).select('name username password');
 
     if (!user) {
-      return res.status(401).json({ success: false, msg: 'Authentication failed. User not found.' });
+      return res.status(200).json({ success: false, msg: 'Authentication failed. User not found.' });
     }
-
+    console.log('signin route hit');
     console.log("Signin attempt:", { username: req.body.username, password: req.body.password });
     console.log("User found:", user);
 
@@ -87,7 +89,7 @@ router.post('/signin', async (req, res) => {
       const token = jwt.sign(userToken, process.env.JWT_SECRET, { expiresIn: '1h' });
       res.json({ success: true, token: 'JWT ' + token });
     } else {
-      res.status(401).json({ success: false, msg: 'Authentication failed. Incorrect password.' });
+      res.status(200).json({ success: false, msg: 'Authentication failed. Incorrect password.' });
     }
   } catch (err) {
     console.error(err);
