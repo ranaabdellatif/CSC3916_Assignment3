@@ -53,11 +53,11 @@ router.post('/signup', async (req, res) => {
             username: req.body.username,
             password: req.body.password,
         });
-
+        console.log("creating a new user: ", user);
         await user.save();
         console.log('signup route hit');
         res.status(201).json({ success: true, msg: 'Successfully created new user.' });
-    } catch (err) {
+    } catch (err) {s
         if (err.code === 11000) {
             return res.status(409).json({ success: false, message: 'A user with that username already exists.' });
         } else {
