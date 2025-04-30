@@ -1,25 +1,10 @@
-var mongoose  =  require( 'mongoose' );
-var Schema    =  mongoose.Schema;
+const mongoose = require('mongoose');
 
-var reviews  =  new Schema({
-        reviewerName       :	{ 
-                            type     : String, 
-                            required : true 
-                        },
-        movieTitle   :	{
-                            type     : String,
-                            required : true
-                        },
-        rating   :	{
-                            type     : Number,
-                            required : true
-                        },
-        reviewString   :	{
-                            type     : String,
-                            required : true
-                        }
-    });
-    
-var Reviewer  =  mongoose.model( 'Reviewer' , reviews );
+const reviewSchema = new mongoose.Schema({
+  movieId: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie' },
+  username: { type: String, required: true },
+  review: { type: String, required: true },
+  rating: { type: Number, min: 0, max: 5, required: true }
+});
 
-module.exports  =  Reviewer;
+module.exports = mongoose.model('Review', reviewSchema);

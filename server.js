@@ -223,23 +223,33 @@ router.route('/movies/:id')
                 res.status(500).json({ success: false, message: 'Error retrieving reviews', error: err });
             }
         })
-        // POST a new review
-        .post(passport.authenticate('jwt', { session: false }), async (req, res) => {  // Protect route with passport JWT authentication
+
+        //post a review
+        router.post('/reviews', passport.authenticate('jwt', { session: false }), async (req, res) => {
             try {
-                const { movieId, review, rating } = req.body;
-    
-                if (!movieId || !review || rating === undefined) {
-                    return res.status(400).json({ success: false, message: 'Please include movieId, review, and rating' });
-                }
-    
-                const newReview = new Review({ movieId, username: req.user.username, review, rating });
-                await newReview.save();
-    
-                res.status(201).json({ success: true, message: 'Review created!' });
+              const { movieId, review, rating } = req.body;
+              const username = req.user.username; // gets username from JWT token
+          
+              if (!movieId || !review || rating == null) {
+                return res.status(400).json({ success: false, message: 'Missing required fields' });
+              }
+          
+              const newReview = new Review({
+                movieId,
+                username,
+                review,
+                rating
+              });
+          
+              await newReview.save();
+              res.status(201).json({ message: 'Review created!' });
+          
             } catch (err) {
-                res.status(500).json({ success: false, message: 'Error creating review', error: err });
+              console.error(err);
+              res.status(500).json({ success: false, message: 'Error creating review', error: err });
             }
-        });
+          });
+          
     
     // Review Routes for a specific review by ID
     router.route('/reviews/:id')
