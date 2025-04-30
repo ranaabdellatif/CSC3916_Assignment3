@@ -170,7 +170,46 @@ router.route('/movies/:id')
         } catch (err) {
             res.status(500).json({ success: false, message: 'Error deleting movie', error: err });
         }
+    })
+    .get(passport.authenticate('jwt', { session: false }), async (req, res) => {
+        try {
+          const includeReviews = req.query.reviews === 'true';
+          const movieId = req.params.id;
+    
+          if (includeReviews) {
+            const movieWithReviews = await Movie.aggregate([
+              {
+                $match: { _id: new mongoose.Types.ObjectId(movieId) }  // match the specific movie by ID
+              },
+              {
+                $lookup: {
+                  from: 'reviews',           // collection name
+                  localField: '_id',
+                  foreignField: 'movieId',
+                  as: 'reviews'
+                }
+              }
+            ]);
+    
+            if (!movieWithReviews || movieWithReviews.length === 0) {
+              return res.status(404).json({ success: false, message: 'Movie not found' });
+            }
+    
+            res.json(movieWithReviews[0]); // only return the first (and only) result
+          } else {
+            const movie = await Movie.findById(movieId);
+    
+            if (!movie) {
+              return res.status(404).json({ success: false, message: 'Movie not found' });
+            }
+    
+            res.json(movie);
+          }
+        } catch (err) {
+          res.status(500).json({ success: false, message: 'Error retrieving movie', error: err });
+        }
     });
+
 
 
     // Review Routes - Protected by JWT
@@ -219,6 +258,7 @@ router.route('/movies/:id')
             }
         });
     
+
 
 app.use('/', router);
 
