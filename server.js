@@ -8,6 +8,7 @@ const passportJwt = require('passport-jwt'); // Import passport-jwt
 
 const User = require('./Users');
 const Movie = require('./Movies');
+const Review = require('./Reviews'); //import review mod
 
 const app = express();
 app.use(cors());
@@ -99,14 +100,32 @@ router.post('/signin', async (req, res) => {
 
 // Movie Routes - Protected by JWT
 router.route('/movies')
-    .get(passport.authenticate('jwt', { session: false }), async (req, res) => {  // Protect route with passport JWT authentication
-        try {
-            const movies = await Movie.find();
-            res.json(movies);
-        } catch (err) {
-            res.status(500).json({ success: false, message: 'Error retrieving movies', error: err });
-        }
-    })
+  .get(passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+      const includeReviews = req.query.reviews === 'true';
+
+      if (includeReviews) {
+        const moviesWithReviews = await Movie.aggregate([
+          {
+            $lookup: {
+              from: 'reviews',           // MongoDB collection name (must be lowercase plural of your model: "Review" => "reviews")
+              localField: '_id',         // movie _id
+              foreignField: 'movieId',   // review.movieId
+              as: 'reviews'              // name of the field to add
+            }
+          }
+        ]);
+
+        res.json(moviesWithReviews);
+      } else {
+        const movies = await Movie.find();
+        res.json(movies);
+      }
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Error retrieving movies', error: err });
+    }
+  })
+
     .post(passport.authenticate('jwt', { session: false }), async (req, res) => {  // Protect route with passport JWT authentication
         try {
             const { title, releaseDate, genre, actors } = req.body;
@@ -152,6 +171,54 @@ router.route('/movies/:id')
             res.status(500).json({ success: false, message: 'Error deleting movie', error: err });
         }
     });
+
+
+    // Review Routes - Protected by JWT
+    router.route('/reviews')
+        // GET all reviews
+        .get(async (req, res) => {
+            try {
+                const reviews = await Review.find().populate('movieId');
+                res.json(reviews);
+            } catch (err) {
+                res.status(500).json({ success: false, message: 'Error retrieving reviews', error: err });
+            }
+        })
+        // POST a new review
+        .post(passport.authenticate('jwt', { session: false }), async (req, res) => {  // Protect route with passport JWT authentication
+            try {
+                const { movieId, review, rating } = req.body;
+    
+                if (!movieId || !review || rating === undefined) {
+                    return res.status(400).json({ success: false, message: 'Please include movieId, review, and rating' });
+                }
+    
+                const newReview = new Review({ movieId, username: req.user.username, review, rating });
+                await newReview.save();
+    
+                res.status(201).json({ success: true, message: 'Review created!' });
+            } catch (err) {
+                res.status(500).json({ success: false, message: 'Error creating review', error: err });
+            }
+        });
+    
+    // Review Routes for a specific review by ID
+    router.route('/reviews/:id')
+        // DELETE a review
+        .delete(passport.authenticate('jwt', { session: false }), async (req, res) => {
+            try {
+                const review = await Review.findByIdAndDelete(req.params.id);
+    
+                if (!review) {
+                    return res.status(404).json({ success: false, message: 'Review not found' });
+                }
+    
+                res.json({ success: true, message: 'Review deleted' });
+            } catch (err) {
+                res.status(500).json({ success: false, message: 'Error deleting review', error: err });
+            }
+        });
+    
 
 app.use('/', router);
 
