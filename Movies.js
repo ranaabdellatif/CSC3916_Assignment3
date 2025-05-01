@@ -34,6 +34,7 @@ const MovieSchema = new mongoose.Schema({
     actorName: String,
     characterName: String,
   }],
+  imageURL: String,
 });
 
 // Check if the model exists before defining it
